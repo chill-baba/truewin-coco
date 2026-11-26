@@ -1,6 +1,8 @@
 // lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -9,18 +11,62 @@ declare global {
   var __dbInitPromise: Promise<void> | undefined;
 }
 
-const prisma = global.__prisma || new PrismaClient();
+// On Vercel serverless functions, the root filesystem is strictly read-only.
+// Only /tmp is writable. If DATABASE_URL is not explicitly set or points to ./prisma/dev.db or ./dev.db,
+// we automatically copy/route it to /tmp/dev.db in serverless/production environments.
+function getDatabaseUrl(): string {
+  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
+    return process.env.DATABASE_URL;
+  }
+
+  // If running on Vercel or production serverless
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === "production") {
+    const tmpDbPath = path.join("/tmp", "dev.db");
+    
+    // Copy bundled seed database if it exists in local directory
+    if (!fs.existsSync(tmpDbPath)) {
+      const candidates = [
+        path.join(process.cwd(), "prisma", "dev.db"),
+        path.join(process.cwd(), "dev.db"),
+      ];
+      for (const cand of candidates) {
+        if (fs.existsSync(cand)) {
+          try {
+            fs.copyFileSync(cand, tmpDbPath);
+            break;
+          } catch {
+            // ignore
+          }
+        }
+      }
+    }
+    return `file:${tmpDbPath}`;
+  }
+
+  return process.env.DATABASE_URL || "file:./prisma/dev.db";
+}
+
+const dbUrl = getDatabaseUrl();
+process.env.DATABASE_URL = dbUrl;
+
+const prisma =
+  global.__prisma ||
+  new PrismaClient({
+    datasources: {
+      db: {
+        url: dbUrl,
+      },
+    },
+  });
 
 if (process.env.NODE_ENV !== "production") {
   global.__prisma = prisma;
 }
 
-// Auto-initialize DB schema and default admin in serverless environments (Vercel)
 export async function ensureDbReady(): Promise<void> {
   if (!global.__dbInitPromise) {
     global.__dbInitPromise = (async () => {
       try {
-        // Create tables if they do not exist
         await prisma.$executeRawUnsafe(`
           CREATE TABLE IF NOT EXISTS "User" (
             "id" TEXT PRIMARY KEY,
@@ -67,6 +113,19 @@ export async function ensureDbReady(): Promise<void> {
               uid: adminId,
               password: hashedPassword,
               role: "admin",
+            },
+          });
+        }
+
+        // Seed default demo user Anish / user123
+        const demoUser = await prisma.user.findUnique({ where: { uid: "Anish" } });
+        if (!demoUser) {
+          const hashedDemo = await bcrypt.hash("user123", 10);
+          await prisma.user.create({
+            data: {
+              uid: "Anish",
+              password: hashedDemo,
+              role: "user",
             },
           });
         }
