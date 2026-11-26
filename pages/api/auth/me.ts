@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!auth) {
       if (hadCookie) {
         clearAuthCookie(res);
-        return res.status(401).json({
+        return res.status(200).json({
           authenticated: false,
           sessionInvalidated: true,
           error: "Your session was ended because you logged in elsewhere or an admin cleared it.",

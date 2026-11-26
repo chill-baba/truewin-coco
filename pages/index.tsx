@@ -106,8 +106,8 @@ export default function Home() {
     const timer = setInterval(async () => {
       try {
         const res = await fetch("/api/auth/me");
-        if (res.status === 401) {
-          const data = await res.json();
+        const data = await res.json();
+        if (res.status === 401 || data.sessionInvalidated) {
           handleForcedLogout(data.error);
         }
       } catch {
