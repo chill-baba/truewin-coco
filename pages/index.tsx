@@ -171,9 +171,14 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uid: loginUid.trim(), password: loginPwd }),
       });
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        // non-json response
+      }
       if (!res.ok) {
-        setLoginError(data.error || "Invalid credentials");
+        setLoginError(data.error || `Server responded with status ${res.status}`);
       } else {
         setUser(data.user);
         setLoginUid("");
@@ -182,8 +187,8 @@ export default function Home() {
           setNotice("Previous active session for this UID was automatically logged out.");
         }
       }
-    } catch {
-      setLoginError("Network error. Please try again.");
+    } catch (err: any) {
+      setLoginError(err?.message ? `Network error: ${err.message}` : "Network error. Please try again.");
     } finally {
       setSubmitting(false);
     }

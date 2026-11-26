@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma";
+import prisma, { ensureDbReady } from "../../lib/prisma";
 import { authenticateRequest } from "../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await ensureDbReady();
   const auth = await authenticateRequest(req);
   if (!auth) {
     return res.status(401).json({ error: "Unauthorized or session replaced", sessionInvalidated: true });

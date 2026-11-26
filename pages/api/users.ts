@@ -1,9 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import prisma from "../../lib/prisma";
+import prisma, { ensureDbReady } from "../../lib/prisma";
 import { authenticateRequest } from "../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await ensureDbReady();
   const auth = await authenticateRequest(req);
   if (!auth || auth.role !== "admin") {
     return res.status(403).json({ error: "Admin access required" });

@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma";
+import prisma, { ensureDbReady } from "../../lib/prisma";
 import { authenticateRequest } from "../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  await ensureDbReady();
   const auth = await authenticateRequest(req);
   if (!auth || auth.role !== "admin") {
     return res.status(403).json({ error: "Admin access required" });
@@ -18,7 +19,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "DELETE") {
     const { id, uid, all } = req.body || {};
     if (all) {
-      // Delete all non-admin sessions, or all sessions if requested
       await prisma.session.deleteMany({
         where: { uid: { not: auth.uid } },
       });
