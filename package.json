@@ -10,22 +10,23 @@
     "seed": "ts-node -O '{\"module\":\"commonjs\"}' prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "5.22.0",
+    "@supabase/supabase-js": "^2.119.2",
+    "bcryptjs": "2.4.3",
+    "dotenv": "16.4.5",
+    "jsonwebtoken": "9.0.2",
     "next": "14.2.15",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "@prisma/client": "5.22.0",
-    "jsonwebtoken": "9.0.2",
-    "bcryptjs": "2.4.3",
-    "dotenv": "16.4.5"
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
-    "prisma": "5.22.0",
-    "ts-node": "10.9.2",
-    "typescript": "5.6.3",
+    "@types/bcryptjs": "2.4.6",
+    "@types/jsonwebtoken": "9.0.7",
     "@types/node": "20.17.6",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
-    "@types/jsonwebtoken": "9.0.7",
-    "@types/bcryptjs": "2.4.6"
+    "prisma": "5.22.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.6.3"
   }
 }

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import prisma from "./prisma";
+import { getSupabaseServer } from "./supabaseServer";
 
 const JWT_SECRET = process.env.JWT_SECRET || "auratube-ultra-secure-local-secret-key-2026";
 export const COOKIE_NAME = "truda_token";
@@ -50,11 +50,6 @@ export function parseCookie(req: NextApiRequest, name: string): string | null {
   return null;
 }
 
-function isUsingEphemeralSqlite(): boolean {
-  const url = process.env.DATABASE_URL || "";
-  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) && !url.startsWith("postgres");
-}
-
 export async function authenticateRequest(req: NextApiRequest): Promise<TokenPayload | null> {
   const token = parseCookie(req, COOKIE_NAME);
   if (!token) return null;
@@ -67,22 +62,15 @@ export async function authenticateRequest(req: NextApiRequest): Promise<TokenPay
       return { uid: decoded.uid, role: "admin", sessionToken: decoded.sessionToken };
     }
 
-    const activeSession = await prisma.session.findUnique({
-      where: { token: decoded.sessionToken },
-    });
+    const supabase = getSupabaseServer();
+    const { data: activeSession } = await supabase
+      .from("Session")
+      .select("id")
+      .eq("token", decoded.sessionToken)
+      .maybeSingle();
 
     if (activeSession) {
       return { uid: decoded.uid, role: decoded.role, sessionToken: decoded.sessionToken };
-    }
-
-    // On Vercel with ephemeral SQLite (/tmp/dev.db), another lambda may not have the Session row
-    // unless a newer session was explicitly created or killed on this lambda.
-    if (isUsingEphemeralSqlite()) {
-      const otherSessions = await prisma.session.count({ where: { uid: decoded.uid } });
-      if (otherSessions === 0) {
-        return { uid: decoded.uid, role: decoded.role, sessionToken: decoded.sessionToken };
-      }
-      return null;
     }
 
     return null;

@@ -1,8 +1,6 @@
 // lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import fs from "fs";
-import path from "path";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -11,52 +9,12 @@ declare global {
   var __dbInitPromise: Promise<void> | undefined;
 }
 
-// On Vercel serverless functions, the root filesystem is strictly read-only.
-// Only /tmp is writable. If DATABASE_URL is not explicitly set or points to ./prisma/dev.db or ./dev.db,
-// we automatically copy/route it to /tmp/dev.db in serverless/production environments.
-function getDatabaseUrl(): string {
-  if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith("postgres")) {
-    return process.env.DATABASE_URL;
-  }
-
-  // If running on Vercel or production serverless
-  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === "production") {
-    const tmpDbPath = path.join("/tmp", "dev.db");
-    
-    // Copy bundled seed database if it exists in local directory
-    if (!fs.existsSync(tmpDbPath)) {
-      const candidates = [
-        path.join(process.cwd(), "prisma", "dev.db"),
-        path.join(process.cwd(), "dev.db"),
-      ];
-      for (const cand of candidates) {
-        if (fs.existsSync(cand)) {
-          try {
-            fs.copyFileSync(cand, tmpDbPath);
-            break;
-          } catch {
-            // ignore
-          }
-        }
-      }
-    }
-    return `file:${tmpDbPath}`;
-  }
-
-  return process.env.DATABASE_URL || "file:./prisma/dev.db";
-}
-
-const dbUrl = getDatabaseUrl();
-process.env.DATABASE_URL = dbUrl;
-
 const prisma =
   global.__prisma ||
   new PrismaClient({
-    datasources: {
-      db: {
-        url: dbUrl,
-      },
-    },
+    datasources: process.env.DATABASE_URL
+      ? { db: { url: process.env.DATABASE_URL } }
+      : undefined,
   });
 
 if (process.env.NODE_ENV !== "production") {
@@ -73,7 +31,7 @@ export async function ensureDbReady(): Promise<void> {
             "uid" TEXT UNIQUE NOT NULL,
             "password" TEXT NOT NULL,
             "role" TEXT NOT NULL DEFAULT 'user',
-            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
           );
         `);
 
@@ -82,19 +40,19 @@ export async function ensureDbReady(): Promise<void> {
             "id" TEXT PRIMARY KEY,
             "uid" TEXT NOT NULL,
             "token" TEXT UNIQUE NOT NULL,
-            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
           );
         `);
 
         await prisma.$executeRawUnsafe(`
           CREATE TABLE IF NOT EXISTS "DataRecord" (
-            "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "id" SERIAL PRIMARY KEY,
             "email" TEXT,
             "phone" TEXT,
             "password" TEXT,
             "notes" TEXT,
             "rating" INTEGER NOT NULL DEFAULT 0,
-            "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
           );
         `);
 
@@ -147,6 +105,8 @@ export async function ensureDbReady(): Promise<void> {
           });
         }
       } catch (err) {
+        // Reset promise on failure so next request can retry
+        global.__dbInitPromise = undefined;
         console.error("ensureDbReady error:", err);
       }
     })();

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs";
-import prisma, { ensureDbReady } from "../../../lib/prisma";
+import crypto from "crypto";
+import { getSupabaseServer, ensureDbReady } from "../../../lib/supabaseServer";
 import { generateSessionToken, setAuthCookie, signJwt } from "../../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,6 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     await ensureDbReady();
+    const supabase = getSupabaseServer();
 
     const { uid, password } = req.body || {};
     if (!uid || !password) {
@@ -17,7 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const cleanUid = String(uid).trim();
-    const user = await prisma.user.findUnique({ where: { uid: cleanUid } });
+    const { data: user, error: userErr } = await supabase
+      .from("User")
+      .select("*")
+      .eq("uid", cleanUid)
+      .maybeSingle();
+
+    if (userErr) {
+      return res.status(500).json({ error: userErr.message });
+    }
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
@@ -31,20 +41,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // Enforce single active session for non-admin users.
     if (user.role !== "admin") {
-      const existing = await prisma.session.count({ where: { uid: user.uid } });
-      if (existing > 0) {
-        await prisma.session.deleteMany({ where: { uid: user.uid } });
+      const { count } = await supabase
+        .from("Session")
+        .select("id", { count: "exact", head: true })
+        .eq("uid", user.uid);
+
+      if ((count ?? 0) > 0) {
+        await supabase.from("Session").delete().eq("uid", user.uid);
         replacedPrevious = true;
       }
     }
 
     const sessionToken = generateSessionToken();
-    await prisma.session.create({
-      data: {
-        uid: user.uid,
-        token: sessionToken,
-      },
+    const { error: sessErr } = await supabase.from("Session").insert({
+      id: crypto.randomUUID(),
+      uid: user.uid,
+      token: sessionToken,
     });
+
+    if (sessErr) {
+      return res.status(500).json({ error: sessErr.message });
+    }
 
     const jwtToken = signJwt({
       uid: user.uid,

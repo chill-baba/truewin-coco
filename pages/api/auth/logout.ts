@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../../lib/prisma";
+import { getSupabaseServer } from "../../../lib/supabaseServer";
 import { authenticateRequest, clearAuthCookie } from "../../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,7 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const auth = await authenticateRequest(req);
   if (auth) {
-    await prisma.session.deleteMany({ where: { token: auth.sessionToken } });
+    const supabase = getSupabaseServer();
+    await supabase.from("Session").delete().eq("token", auth.sessionToken);
   }
 
   clearAuthCookie(res);

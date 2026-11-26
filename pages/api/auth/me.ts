@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { ensureDbReady } from "../../../lib/prisma";
+import { ensureDbReady } from "../../../lib/supabaseServer";
 import { authenticateRequest, clearAuthCookie, parseCookie, COOKIE_NAME } from "../../../lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
