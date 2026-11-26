@@ -9,10 +9,9 @@ import {
   Lock,
   User,
   Smartphone,
-  AlertCircle,
-  CheckCircle2,
   ArrowRight,
   ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 
 export default function UserLoginPage() {
@@ -86,32 +85,35 @@ export default function UserLoginPage() {
 
       // Success
       router.push('/dashboard');
-    } catch (err: any) {
+    } catch {
       setError('Connection error. Please check your network and try again.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#090b10] text-[#e2e8f0]">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen bg-[#07090e] bg-ambient-grid text-[#f1f5f9] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-md space-y-8 relative z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-emerald-500/10 border border-indigo-500/30 text-indigo-400 mb-2 shadow-lg shadow-indigo-500/10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-emerald-500/10 border border-indigo-500/30 text-indigo-400 mb-2 glow-indigo shadow-2xl animate-float">
             <Shield className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            TRUWIN <span className="text-indigo-400 font-light">COCO</span>
+            TRUWIN <span className="gradient-text-indigo font-light">COCO</span>
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400">
             Single-Device Secure User Access Portal
           </p>
         </div>
 
         {/* Login Box */}
-        <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
-          <div className="border-b border-slate-800/60 pb-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+        <div className="glass-panel-elevated rounded-2xl p-6 sm:p-8 space-y-6">
+          <div className="border-b border-slate-800/80 pb-4">
+            <h2 className="text-base font-semibold text-white flex items-center gap-2">
               <Lock className="w-4 h-4 text-indigo-400" />
               Member Authentication
             </h2>
@@ -121,15 +123,15 @@ export default function UserLoginPage() {
           </div>
 
           {error && (
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3 animate-in fade-in">
-              <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
-              <div className="leading-snug">{error}</div>
+            <div className="p-4 rounded-xl badge-rose text-xs flex items-start gap-3">
+              <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-400" />
+              <div className="leading-relaxed">{error}</div>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Assigned UID
               </label>
               <div className="relative">
@@ -142,13 +144,13 @@ export default function UserLoginPage() {
                   value={uid}
                   onChange={(e) => setUid(e.target.value)}
                   placeholder="e.g. coco_alpha"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:border-indigo-500 text-xs transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wider">
+              <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                 Password
               </label>
               <div className="relative">
@@ -161,23 +163,23 @@ export default function UserLoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:border-indigo-500 text-xs transition-all"
                 />
               </div>
             </div>
 
-            {/* Device Info Badge */}
+            {/* Detected Device Badge */}
             {deviceInfo && (
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+              <div className="p-3 rounded-xl bg-[#090d16] border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                 <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-emerald-400" />
-                  <span>Detected Device:</span>
-                  <span className="text-slate-200 font-medium">
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span className="text-[11px]">Hardware:</span>
+                  <span className="text-slate-200 font-medium text-[11px] truncate max-w-[150px]">
                     {deviceInfo.deviceName}
                   </span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  1 UID = 1 Device
+                <span className="text-[10px] px-2 py-0.5 rounded-full badge-emerald font-semibold">
+                  1 Device Locked
                 </span>
               </div>
             )}
@@ -185,36 +187,32 @@ export default function UserLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-medium text-sm shadow-lg shadow-indigo-600/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-[#111622] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:opacity-95 text-white font-medium text-xs shadow-lg glow-indigo transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {loading ? (
-                <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
                   <span>Sign In to Dashboard</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
             </button>
           </form>
 
-          {/* Quick Notice */}
-          <div className="pt-2 text-center text-xs text-slate-500">
+          <div className="pt-2 text-center text-[11px] text-slate-500">
             Account registration is managed strictly by system administrators.
           </div>
         </div>
 
         {/* Footer Navigation */}
         <div className="flex justify-between items-center text-xs text-slate-500 px-2">
-          <Link
-            href="/"
-            className="hover:text-slate-300 transition-colors"
-          >
+          <Link href="/" className="hover:text-slate-300 transition-colors">
             ← System Gateway
           </Link>
           <Link
             href="/admin"
-            className="hover:text-indigo-400 text-slate-400 transition-colors flex items-center gap-1"
+            className="hover:text-indigo-400 text-slate-400 transition-colors flex items-center gap-1.5"
           >
             <Shield className="w-3.5 h-3.5" />
             Admin Control Center

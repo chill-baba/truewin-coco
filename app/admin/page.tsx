@@ -31,6 +31,7 @@ import {
   ChevronRight,
   Filter,
   Activity,
+  Sparkles,
 } from 'lucide-react';
 
 interface Stats {
@@ -524,7 +525,7 @@ export default function AdminPage() {
   // ---------------------------------------------------------------------------
   if (isAdminAuthenticated === null) {
     return (
-      <div className="min-h-screen bg-[#090b10] flex items-center justify-center">
+      <div className="min-h-screen bg-[#07090e] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -532,23 +533,26 @@ export default function AdminPage() {
 
   if (isAdminAuthenticated === false) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#090b10] text-[#e2e8f0]">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen bg-[#07090e] bg-ambient-grid text-[#f1f5f9] flex flex-col justify-center items-center px-4 py-12 relative overflow-hidden">
+        {/* Ambient Glow */}
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-indigo-500/10 rounded-full blur-[110px] pointer-events-none" />
+
+        <div className="w-full max-w-md space-y-8 relative z-10">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-2 shadow-lg shadow-indigo-500/10">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-emerald-500/10 border border-indigo-500/30 text-indigo-400 mb-2 glow-indigo shadow-2xl animate-float">
               <Shield className="w-7 h-7" />
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white">
-              TRUWIN <span className="text-indigo-400 font-light">COCO</span>
+              TRUWIN <span className="gradient-text-indigo font-light">COCO</span>
             </h1>
-            <p className="text-sm text-slate-400">
+            <p className="text-xs sm:text-sm text-slate-400">
               Primary Administrator Control Console
             </p>
           </div>
 
-          <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-6">
-            <div className="border-b border-slate-800/60 pb-4">
-              <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <div className="glass-panel-elevated rounded-2xl p-6 sm:p-8 space-y-6">
+            <div className="border-b border-slate-800/80 pb-4">
+              <h2 className="text-base font-semibold text-white flex items-center gap-2">
                 <Lock className="w-4 h-4 text-indigo-400" />
                 Root Administrator Access
               </h2>
@@ -558,15 +562,15 @@ export default function AdminPage() {
             </div>
 
             {loginError && (
-              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3">
-                <ShieldAlert className="w-5 h-5 flex-shrink-0 mt-0.5 text-rose-400" />
-                <div className="leading-snug">{loginError}</div>
+              <div className="p-4 rounded-xl badge-rose text-xs flex items-start gap-3">
+                <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-400" />
+                <div className="leading-relaxed">{loginError}</div>
               </div>
             )}
 
             <form onSubmit={handleAdminLogin} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Admin ID
                 </label>
                 <div className="relative">
@@ -579,13 +583,13 @@ export default function AdminPage() {
                     value={adminUidInput}
                     onChange={(e) => setAdminUidInput(e.target.value)}
                     placeholder="e.g. hellobabu"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:border-indigo-500 text-xs transition-all"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[11px] font-semibold text-slate-300 mb-1.5 uppercase tracking-wider">
                   Master Password
                 </label>
                 <div className="relative">
@@ -598,7 +602,7 @@ export default function AdminPage() {
                     value={adminPasswordInput}
                     onChange={(e) => setAdminPasswordInput(e.target.value)}
                     placeholder="Enter admin password"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-600 focus:border-indigo-500 text-xs transition-all"
                   />
                 </div>
               </div>
@@ -606,10 +610,10 @@ export default function AdminPage() {
               <button
                 type="submit"
                 disabled={loginLoading}
-                className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-medium text-sm shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-600 hover:opacity-95 text-white font-medium text-xs shadow-lg glow-indigo transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {loginLoading ? (
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                 ) : (
                   <span>Access Control Panel</span>
                 )}
@@ -634,18 +638,18 @@ export default function AdminPage() {
   // RENDER: Main Admin Console (Authenticated)
   // ---------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#090b10] text-[#e2e8f0] flex">
+    <div className="min-h-screen bg-[#07090e] bg-ambient-grid text-[#f1f5f9] flex">
       {/* Sidebar Navigation */}
-      <aside className="w-64 bg-[#0d111a] border-r border-slate-800/80 flex flex-col fixed inset-y-0 z-30">
+      <aside className="w-64 glass-panel border-r border-slate-800/80 flex flex-col fixed inset-y-0 z-30">
         {/* Brand */}
         <div className="h-16 px-6 border-b border-slate-800/80 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold glow-indigo">
             <Shield className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-bold text-white tracking-wide text-sm">TRUWIN</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-semibold">
+              <span className="text-[10px] px-1.5 py-0.5 rounded badge-indigo font-bold">
                 ADMIN
               </span>
             </div>
@@ -654,7 +658,7 @@ export default function AdminPage() {
         </div>
 
         {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
           {[
             { id: 'overview', label: 'Overview', icon: Activity },
             { id: 'users', label: 'Users', icon: Users, badge: users.length },
@@ -663,14 +667,14 @@ export default function AdminPage() {
               label: 'Active Sessions',
               icon: Radio,
               badge: stats?.activeUsers || activeSessions.length,
-              badgeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+              badgeColor: 'badge-emerald',
             },
             {
               id: 'requests',
               label: 'Access Requests',
               icon: UserCheck,
               badge: stats?.pendingRequests,
-              badgeColor: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+              badgeColor: 'badge-amber',
             },
             { id: 'marketing', label: 'Marketing Access', icon: Key },
             {
@@ -678,7 +682,7 @@ export default function AdminPage() {
               label: 'Notifications',
               icon: Bell,
               badge: unreadNotifCount,
-              badgeColor: 'bg-indigo-500/20 text-indigo-300 font-bold',
+              badgeColor: 'badge-indigo',
             },
             { id: 'settings', label: 'Settings', icon: Settings },
           ].map((item) => {
@@ -690,7 +694,7 @@ export default function AdminPage() {
                 onClick={() => setActiveTab(item.id as any)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer ${
                   active
-                    ? 'bg-indigo-600/10 text-indigo-400 border border-indigo-500/20'
+                    ? 'bg-indigo-600/15 text-indigo-400 border border-indigo-500/30 shadow-sm'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
@@ -700,7 +704,7 @@ export default function AdminPage() {
                 </div>
                 {item.badge !== undefined && item.badge > 0 && (
                   <span
-                    className={`text-[10px] px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                       item.badgeColor || 'bg-slate-800 text-slate-300'
                     }`}
                   >
@@ -717,7 +721,7 @@ export default function AdminPage() {
           <div className="flex items-center justify-between text-xs text-slate-400 px-1">
             <span className="truncate">Administrator</span>
             <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Live
             </span>
           </div>
@@ -732,9 +736,9 @@ export default function AdminPage() {
       </aside>
 
       {/* Main Content Pane */}
-      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 ml-64 flex flex-col min-h-screen relative z-10">
         {/* Header Bar */}
-        <header className="h-16 border-b border-slate-800/80 bg-[#090b10]/80 backdrop-blur-md px-8 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-16 border-b border-slate-800/80 glass-panel px-8 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3">
             <h1 className="text-base font-bold text-white capitalize">
               {activeTab === 'overview'
@@ -751,7 +755,7 @@ export default function AdminPage() {
                 ? 'Audit & Notification Center'
                 : 'System Settings'}
             </h1>
-            <span className="text-xs text-slate-500">|</span>
+            <span className="text-xs text-slate-600">|</span>
             <span className="text-xs text-slate-400">TRUWIN COCO Access Engine</span>
           </div>
 
@@ -768,7 +772,7 @@ export default function AdminPage() {
             {activeTab === 'users' && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-medium shadow-md shadow-indigo-600/20 cursor-pointer"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:opacity-95 text-white text-xs font-medium shadow-md glow-indigo cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Create User</span>
@@ -778,7 +782,7 @@ export default function AdminPage() {
             {activeTab === 'marketing' && (
               <button
                 onClick={() => setShowAddCredModal(true)}
-                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white text-xs font-medium shadow-md shadow-indigo-600/20 cursor-pointer"
+                className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:opacity-95 text-white text-xs font-medium shadow-md glow-indigo cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Credential</span>
@@ -842,10 +846,10 @@ export default function AdminPage() {
                   return (
                     <div
                       key={i}
-                      className="bg-[#111622] border border-slate-800/80 p-4 rounded-2xl space-y-2 shadow-lg"
+                      className="glass-panel p-4 rounded-2xl space-y-2 shadow-lg"
                     >
                       <div className="flex items-center justify-between text-slate-500">
-                        <span className="text-[10px] font-medium uppercase tracking-wider">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider">
                           {card.label}
                         </span>
                         <Icon className="w-3.5 h-3.5" />
@@ -859,15 +863,15 @@ export default function AdminPage() {
               {/* Quick Actions & Live Overview Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Active Sessions Mini-Table */}
-                <div className="lg:col-span-2 bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800/60 pb-4">
+                <div className="lg:col-span-2 glass-panel-elevated rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                     <div className="flex items-center gap-2">
                       <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
                       <h3 className="text-sm font-bold text-white">Live Active Device Sessions</h3>
                     </div>
                     <button
                       onClick={() => setActiveTab('sessions')}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer font-medium"
                     >
                       <span>View All</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -885,7 +889,7 @@ export default function AdminPage() {
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
                               <span className="font-semibold text-white">{s.uid}</span>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full badge-emerald font-semibold">
                                 {s.sessionStatus}
                               </span>
                             </div>
@@ -898,7 +902,7 @@ export default function AdminPage() {
 
                           <button
                             onClick={() => handleTerminateSession(s.uid)}
-                            className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[11px] font-medium transition-all cursor-pointer"
+                            className="px-2.5 py-1 rounded-lg badge-rose text-[11px] font-semibold transition-all cursor-pointer"
                           >
                             Terminate
                           </button>
@@ -909,15 +913,15 @@ export default function AdminPage() {
                 </div>
 
                 {/* Recent Notifications Feed */}
-                <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800/60 pb-4">
+                <div className="glass-panel-elevated rounded-2xl p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                     <div className="flex items-center gap-2">
                       <Bell className="w-4 h-4 text-indigo-400" />
                       <h3 className="text-sm font-bold text-white">Recent Security Alerts</h3>
                     </div>
                     <button
                       onClick={() => setActiveTab('notifications')}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer font-medium"
                     >
                       <span>All</span>
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -930,10 +934,10 @@ export default function AdminPage() {
                         key={n.id}
                         className={`p-3 rounded-xl border text-xs space-y-1 ${
                           n.type === 'UNAUTHORIZED_DEVICE'
-                            ? 'bg-rose-500/10 border-rose-500/20 text-rose-300'
+                            ? 'badge-rose'
                             : n.type === 'ACCESS_REQUEST'
-                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                            : 'bg-slate-900/60 border-slate-800/60 text-slate-300'
+                            ? 'badge-amber'
+                            : 'bg-[#090d16]/80 border-slate-800/80 text-slate-300'
                         }`}
                       >
                         <div className="flex items-center justify-between font-semibold">
@@ -958,7 +962,7 @@ export default function AdminPage() {
           {activeTab === 'users' && (
             <div className="space-y-6">
               {/* Filter & Search Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#111622] p-4 rounded-2xl border border-slate-800/80">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-slate-800/80">
                 <div className="w-full sm:w-96 relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                     <Search className="w-4 h-4" />
@@ -968,7 +972,7 @@ export default function AdminPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by UID, Email, or Phone..."
-                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 text-xs"
+                    className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#090d16] border border-slate-800 text-white placeholder-slate-500 focus:border-indigo-500 text-xs"
                   />
                   {searchQuery && (
                     <button
@@ -985,7 +989,7 @@ export default function AdminPage() {
                   <select
                     value={userFilterStatus}
                     onChange={(e) => setUserFilterStatus(e.target.value)}
-                    className="px-3 py-1.5 rounded-xl bg-[#090d16] border border-slate-800 text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+                    className="px-3 py-1.5 rounded-xl bg-[#090d16] border border-slate-800 text-xs text-slate-300 focus:border-indigo-500"
                   >
                     <option value="all">All Users ({users.length})</option>
                     <option value="online">Online Currently</option>
@@ -998,7 +1002,7 @@ export default function AdminPage() {
 
               {/* Users Cards / List (Sorted Descending Chronological Order) */}
               {filteredUsers.length === 0 ? (
-                <div className="p-12 text-center bg-[#111622] border border-slate-800/80 rounded-2xl space-y-3">
+                <div className="p-12 text-center glass-panel-elevated rounded-2xl space-y-3">
                   <Users className="w-10 h-10 text-slate-600 mx-auto" />
                   <p className="text-sm text-slate-400">
                     {searchQuery ? `No users matching "${searchQuery}"` : 'No users registered yet.'}
@@ -1015,7 +1019,7 @@ export default function AdminPage() {
                   {filteredUsers.map((u) => (
                     <div
                       key={u.id}
-                      className="bg-[#111622] border border-slate-800/90 rounded-2xl p-5 shadow-lg space-y-4 hover:border-slate-700/80 transition-all flex flex-col justify-between"
+                      className="glass-card rounded-2xl p-5 space-y-4 flex flex-col justify-between"
                     >
                       {/* Top Header: UID + Copy button + Status Badge */}
                       <div className="space-y-3">
@@ -1051,7 +1055,7 @@ export default function AdminPage() {
 
                           <div className="flex items-center gap-1.5">
                             {u.is_online ? (
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1 font-semibold">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full badge-emerald flex items-center gap-1 font-semibold">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                 Online
                               </span>
@@ -1064,7 +1068,7 @@ export default function AdminPage() {
                         </div>
 
                         {/* Contact details with copy buttons */}
-                        <div className="space-y-1.5 text-xs text-slate-300 bg-[#090d16] p-3 rounded-xl border border-slate-800/60">
+                        <div className="space-y-1.5 text-xs text-slate-300 bg-[#090d16]/80 p-3 rounded-xl border border-slate-800/60">
                           <div className="flex items-center justify-between">
                             <span className="text-slate-500 text-[11px]">Email:</span>
                             <div className="flex items-center gap-1.5">
@@ -1078,7 +1082,7 @@ export default function AdminPage() {
                                   title="Copy Email"
                                 >
                                   {copiedKey === `em-${u.id}` ? (
-                                    <span className="text-emerald-400 text-[10px]">Copied!</span>
+                                    <span className="text-emerald-400 text-[10px] font-semibold">Copied!</span>
                                   ) : (
                                     <Copy className="w-3 h-3" />
                                   )}
@@ -1100,7 +1104,7 @@ export default function AdminPage() {
                                   title="Copy Phone"
                                 >
                                   {copiedKey === `ph-${u.id}` ? (
-                                    <span className="text-emerald-400 text-[10px]">Copied!</span>
+                                    <span className="text-emerald-400 text-[10px] font-semibold">Copied!</span>
                                   ) : (
                                     <Copy className="w-3 h-3" />
                                   )}
@@ -1112,8 +1116,8 @@ export default function AdminPage() {
 
                         {/* Status Badges */}
                         <div className="grid grid-cols-2 gap-2 text-[11px]">
-                          <div className="p-2 rounded-lg bg-[#090d16] border border-slate-800/60">
-                            <span className="text-[10px] text-slate-500 block uppercase">
+                          <div className="p-2.5 rounded-lg bg-[#090d16]/80 border border-slate-800/60">
+                            <span className="text-[10px] text-slate-500 block uppercase font-semibold">
                               Marketing Access
                             </span>
                             <span
@@ -1129,8 +1133,8 @@ export default function AdminPage() {
                             </span>
                           </div>
 
-                          <div className="p-2 rounded-lg bg-[#090d16] border border-slate-800/60">
-                            <span className="text-[10px] text-slate-500 block uppercase">
+                          <div className="p-2.5 rounded-lg bg-[#090d16]/80 border border-slate-800/60">
+                            <span className="text-[10px] text-slate-500 block uppercase font-semibold">
                               Bound Device
                             </span>
                             <span className="text-slate-300 font-medium truncate block">
@@ -1141,13 +1145,13 @@ export default function AdminPage() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="pt-2 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-1.5 text-xs">
+                      <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-1.5 text-xs">
                         <div className="flex items-center gap-1">
                           {/* Approve/Revoke Marketing Access */}
                           {u.marketing_access !== 'Approved' ? (
                             <button
                               onClick={() => handleReviewAccess(u.uid, 'Approved')}
-                              className="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[11px] font-medium transition-all cursor-pointer"
+                              className="px-2 py-1 rounded-lg badge-emerald text-[11px] font-semibold transition-all cursor-pointer"
                               title="Approve Marketing Credentials Access"
                             >
                               Approve
@@ -1155,7 +1159,7 @@ export default function AdminPage() {
                           ) : (
                             <button
                               onClick={() => handleReviewAccess(u.uid, 'Revoked')}
-                              className="px-2 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[11px] font-medium transition-all cursor-pointer"
+                              className="px-2 py-1 rounded-lg badge-rose text-[11px] font-semibold transition-all cursor-pointer"
                               title="Revoke Marketing Credentials Access"
                             >
                               Revoke
@@ -1212,7 +1216,7 @@ export default function AdminPage() {
                           {u.is_online && (
                             <button
                               onClick={() => handleTerminateSession(u.uid)}
-                              className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition-all cursor-pointer"
+                              className="p-1.5 rounded-lg badge-amber transition-all cursor-pointer"
                               title="Force Terminate Session"
                             >
                               <Radio className="w-3.5 h-3.5 text-amber-400" />
@@ -1225,7 +1229,7 @@ export default function AdminPage() {
                               setSelectedUser(u);
                               setShowDeleteModal(true);
                             }}
-                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-all cursor-pointer"
+                            className="p-1.5 rounded-lg badge-rose transition-all cursor-pointer"
                             title="Delete User"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1242,8 +1246,8 @@ export default function AdminPage() {
           {/* TAB 3: ACTIVE SESSIONS */}
           {activeTab === 'sessions' && (
             <div className="space-y-6">
-              <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800/60 pb-4">
+              <div className="glass-panel-elevated rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
                       <Radio className="w-5 h-5 text-emerald-400 animate-pulse" />
@@ -1253,7 +1257,7 @@ export default function AdminPage() {
                       Real-time single-device connections verified by cryptographic heartbeat.
                     </p>
                   </div>
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                  <span className="text-xs px-2.5 py-1 rounded-full badge-emerald font-semibold">
                     {activeSessions.length} Devices Online
                   </span>
                 </div>
@@ -1294,14 +1298,14 @@ export default function AdminPage() {
                                 : 'Just now'}
                             </td>
                             <td className="py-3 px-4">
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                              <span className="text-[10px] px-2 py-0.5 rounded-full badge-emerald font-semibold">
                                 Active (Bound)
                               </span>
                             </td>
                             <td className="py-3 px-4 text-right">
                               <button
                                 onClick={() => handleTerminateSession(s.uid)}
-                                className="px-3 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-medium transition-all cursor-pointer"
+                                className="px-3 py-1 rounded-lg badge-rose font-semibold transition-all cursor-pointer"
                               >
                                 Terminate Session
                               </button>
@@ -1319,8 +1323,8 @@ export default function AdminPage() {
           {/* TAB 4: ACCESS REQUESTS */}
           {activeTab === 'requests' && (
             <div className="space-y-6">
-              <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                <div className="border-b border-slate-800/60 pb-4">
+              <div className="glass-panel-elevated rounded-2xl p-6 space-y-4">
+                <div className="border-b border-slate-800/80 pb-4">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <UserCheck className="w-5 h-5 text-indigo-400" />
                     Marketing Credentials Access Requests
@@ -1345,12 +1349,12 @@ export default function AdminPage() {
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-white text-sm">{req.uid}</span>
                             <span
-                              className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
                                 req.status === 'Approved'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                                  ? 'badge-emerald'
                                   : req.status === 'Pending Approval'
-                                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                  : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                  ? 'badge-amber'
+                                  : 'badge-rose'
                               }`}
                             >
                               {req.status}
@@ -1367,13 +1371,13 @@ export default function AdminPage() {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleReviewAccess(req.id, 'Approved')}
-                            className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-medium cursor-pointer"
+                            className="px-3 py-1.5 rounded-xl badge-emerald text-xs font-semibold cursor-pointer"
                           >
                             Approve Access
                           </button>
                           <button
                             onClick={() => handleReviewAccess(req.id, 'Rejected')}
-                            className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-medium cursor-pointer"
+                            className="px-3 py-1.5 rounded-xl badge-rose text-xs font-semibold cursor-pointer"
                           >
                             Reject
                           </button>
@@ -1389,8 +1393,8 @@ export default function AdminPage() {
           {/* TAB 5: MARKETING CREDENTIALS MANAGEMENT */}
           {activeTab === 'marketing' && (
             <div className="space-y-6">
-              <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/60 pb-4">
+              <div className="glass-panel-elevated rounded-2xl p-6 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
                   <div>
                     <h3 className="text-base font-bold text-white flex items-center gap-2">
                       <Key className="w-5 h-5 text-indigo-400" />
@@ -1402,7 +1406,7 @@ export default function AdminPage() {
                   </div>
                   <button
                     onClick={() => setShowAddCredModal(true)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium cursor-pointer"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium cursor-pointer shadow-md glow-indigo"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add New Key</span>
@@ -1413,11 +1417,11 @@ export default function AdminPage() {
                   {marketingCreds.map((cred) => (
                     <div
                       key={cred.id}
-                      className="bg-[#090d16] border border-slate-800 rounded-xl p-5 space-y-3"
+                      className="glass-card rounded-xl p-5 space-y-3"
                     >
                       <div className="flex items-start justify-between">
                         <div>
-                          <span className="text-[10px] uppercase font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
+                          <span className="text-[10px] uppercase font-bold badge-indigo px-2 py-0.5 rounded">
                             {cred.category}
                           </span>
                           <h4 className="text-sm font-bold text-white mt-1.5">{cred.label}</h4>
@@ -1435,23 +1439,23 @@ export default function AdminPage() {
 
                       <div className="space-y-2 text-xs">
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase">Access Key</span>
-                          <div className="p-2 rounded bg-[#111622] font-mono text-slate-200 text-[11px] truncate select-all">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold">Access Key</span>
+                          <div className="p-2 rounded bg-[#090d16] font-mono text-slate-200 text-[11px] truncate select-all">
                             {cred.access_key}
                           </div>
                         </div>
 
                         <div>
-                          <span className="text-[10px] text-slate-500 uppercase">Secret Key</span>
-                          <div className="p-2 rounded bg-[#111622] font-mono text-slate-200 text-[11px] truncate select-all">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold">Secret Key</span>
+                          <div className="p-2 rounded bg-[#090d16] font-mono text-slate-200 text-[11px] truncate select-all">
                             {cred.secret_key}
                           </div>
                         </div>
 
                         {cred.endpoint && (
                           <div>
-                            <span className="text-[10px] text-slate-500 uppercase">Endpoint</span>
-                            <div className="p-2 rounded bg-[#111622] font-mono text-slate-400 text-[11px] truncate">
+                            <span className="text-[10px] text-slate-500 uppercase font-semibold">Endpoint</span>
+                            <div className="p-2 rounded bg-[#090d16] font-mono text-slate-400 text-[11px] truncate">
                               {cred.endpoint}
                             </div>
                           </div>
@@ -1467,8 +1471,8 @@ export default function AdminPage() {
           {/* TAB 6: NOTIFICATIONS */}
           {activeTab === 'notifications' && (
             <div className="space-y-6">
-              <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800/60 pb-4">
+              <div className="glass-panel-elevated rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
                   <div className="flex items-center gap-2">
                     <Bell className="w-5 h-5 text-indigo-400" />
                     <div>
@@ -1488,7 +1492,7 @@ export default function AdminPage() {
                     </button>
                     <button
                       onClick={handleClearNotifications}
-                      className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-medium cursor-pointer"
+                      className="px-3 py-1.5 rounded-xl badge-rose text-xs font-semibold cursor-pointer"
                     >
                       Clear All
                     </button>
@@ -1508,10 +1512,10 @@ export default function AdminPage() {
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
                               n.type === 'UNAUTHORIZED_DEVICE'
-                                ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                                ? 'badge-rose'
                                 : n.type === 'LOGIN'
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                                ? 'badge-emerald'
+                                : 'badge-indigo'
                             }`}
                           >
                             {n.type}
@@ -1536,8 +1540,8 @@ export default function AdminPage() {
           {/* TAB 7: SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-6 max-w-4xl">
-              <div className="bg-[#111622] border border-slate-800/80 rounded-2xl p-6 shadow-xl space-y-6">
-                <div className="border-b border-slate-800/60 pb-4">
+              <div className="glass-panel-elevated rounded-2xl p-6 space-y-6">
+                <div className="border-b border-slate-800/80 pb-4">
                   <h3 className="text-base font-bold text-white flex items-center gap-2">
                     <Settings className="w-5 h-5 text-indigo-400" />
                     System Infrastructure & Security Configuration
@@ -1548,7 +1552,7 @@ export default function AdminPage() {
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  <div className="p-4 rounded-xl bg-[#090d16] border border-slate-800/60 space-y-2">
+                  <div className="p-4 rounded-xl bg-[#090d16]/80 border border-slate-800/60 space-y-2">
                     <span className="text-slate-400 font-semibold uppercase text-[10px]">
                       Administrator Environment Mapping
                     </span>
@@ -1569,7 +1573,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  <div className="p-4 rounded-xl bg-[#090d16] border border-slate-800/60 space-y-2">
+                  <div className="p-4 rounded-xl bg-[#090d16]/80 border border-slate-800/60 space-y-2">
                     <span className="text-slate-400 font-semibold uppercase text-[10px]">
                       Single-Device Enforcement Rule
                     </span>
@@ -1594,7 +1598,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+          <div className="glass-panel-elevated rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="font-bold text-white text-sm">Create New User</h3>
               <button
@@ -1695,7 +1699,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
+          <div className="glass-panel-elevated rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="font-bold text-white text-sm">Edit User: {selectedUser.uid}</h3>
               <button
@@ -1787,7 +1791,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showResetPassModal && selectedUser && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+          <div className="glass-panel-elevated rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div className="border-b border-slate-800 pb-3">
               <h3 className="font-bold text-white text-sm">Reset Password</h3>
               <p className="text-xs text-slate-400 mt-1">Set a new password for {selectedUser.uid}</p>
@@ -1831,7 +1835,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showReassignModal && selectedUser && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div className="glass-panel-elevated rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="border-b border-slate-800 pb-3">
               <h3 className="font-bold text-white text-sm">Device Binding & Reassignment</h3>
               <p className="text-xs text-slate-400 mt-1">
@@ -1879,7 +1883,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showDeleteModal && selectedUser && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-rose-500/30 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+          <div className="glass-panel-elevated border-rose-500/30 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-rose-400">
               <AlertTriangle className="w-6 h-6 flex-shrink-0" />
               <h3 className="font-bold text-white text-sm">Confirm User Deletion</h3>
@@ -1915,7 +1919,7 @@ export default function AdminPage() {
       {/* --------------------------------------------------------------------- */}
       {showAddCredModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#111622] border border-slate-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div className="glass-panel-elevated rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="font-bold text-white text-sm">Add Marketing Credential</h3>
               <button
@@ -2000,7 +2004,7 @@ export default function AdminPage() {
               <div className="pt-2 flex justify-end gap-2">
                 <button
                   type="button"
-                  onClick={() => setShowAddCredModal(false)}
+                  onClick={() => setShowAddModal(false)}
                   className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300"
                 >
                   Cancel
