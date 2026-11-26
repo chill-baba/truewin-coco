@@ -13,8 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Admin Panel | Secure Intel & Text Extractor",
-  description: "Secure Admin Management, Single-Device Authentication, and Data Extractor Portal.",
+  title: "TRUWIN COCO | Admin & User Access Management",
+  description:
+    "Secure Single-Device Authentication, Admin Control Center, and Protected Marketing Credentials Portal.",
 };
 
 export default function RootLayout({
